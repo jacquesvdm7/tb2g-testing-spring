@@ -20,6 +20,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +52,63 @@ class OwnerControllerTest {
     void tearDown()
     {
         reset(clinicService);
+    }
+
+
+
+    //Here we edit owner 1 with new details with valid info
+    @Test
+    void testProcessUpdateOwnerFormPostValid() throws Exception {
+        mockMvc.perform(post("/owners/{ownerId}/edit", 1)
+                .param("firstName", "Jacques")
+                .param("lastName", "vdMerwe")
+                .param("address", "Somewhere")
+                .param("city", "somecity")
+                .param("telephone", "034043044"))
+                .andExpect(status().is3xxRedirection())
+        ;
+    }
+
+    //Here we edit owner 1 with new details with valid info
+    @Test
+    void testProcessUpdateOwnerFormPostInValid() throws Exception {
+        mockMvc.perform(post("/owners/{ownerId}/edit", 1)
+                .param("address", "Somewhere")
+                .param("city", "somecity")
+                .param("telephone", "034043044"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasErrors("owner"))
+                .andExpect(model().attributeHasFieldErrors("owner","firstName","lastName"))
+                .andExpect(view().name("owners/createOrUpdateOwnerForm"))
+        ;
+    }
+
+    //Here we use the post method with processCreationForm with new owner
+    @Test
+    void testNewOwnerPostValid() throws Exception {
+
+        mockMvc.perform(post("/owners/new")
+                .param("firstName", "Jacques")
+                .param("lastName", "vdMerwe")
+                .param("address", "Somewhere")
+                .param("city", "somecity")
+                .param("telephone", "034043044")
+        )
+                .andExpect(status().is3xxRedirection())
+           ;
+    }
+
+    //Validate invalid Owner object with specific fields that are missing and we check so in the test
+    @Test
+    void testNewOwnerPostInValid() throws Exception {
+        mockMvc.perform(post("/owners/new")
+                    .param("firstName", "Jacques")
+                    .param("lastName", "vdMerwe")
+                    .param("address", "Somewhere"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasErrors("owner"))
+                .andExpect(model().attributeHasFieldErrors("owner","city","telephone"))
+                .andExpect(view().name("owners/createOrUpdateOwnerForm"));
     }
 
     @Test
